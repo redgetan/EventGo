@@ -12,8 +12,13 @@ const styles = StyleSheet.create({
 export default class EventStats extends Component {
 
   render() {
+    let attendeeCount = Math.min(1, this.props.count)
+    let voteCount = this.props.count
+
     return (
-      <Text style={[styles.text, this.props.style]}>10 event attendees have submitted 7411 codes</Text>
+      <Text style={[styles.text, this.props.style]}>
+        {attendeeCount} event attendees have submitted {voteCount} codes
+      </Text>
     )
   }
 }

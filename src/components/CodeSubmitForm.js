@@ -3,82 +3,120 @@ import { TextInput, Text, View, StyleSheet } from 'react-native';
 import GradientButton from './GradientButton'
 
 const styles = StyleSheet.create({
-  label: {
-    color: '#19769F',
-    fontSize: 20,
-    marginBottom: 20
-  },
-  successLabel: {
-    marginVertical: 34
-  },
   codeInput: {
     height: 40,
-    marginBottom: 20,
     borderColor: '#D5D5D5',
     borderWidth: 1,
     paddingLeft: 16
+  },
+  inputError: {
+    color: '#FF7474',
+    borderColor: '#FF7474',
+    borderWidth: 1
+  },
+  textError: {
+    color: '#FF7474'
+  },
+  submitBtn: {
+    marginTop: 20
   }
 });
-
-function InputAnother(props) {
-  return <View>  
-    <Text style={props.style}>Success:</Text>  
-    <GradientButton text="Input Another" onPress={props.onPress}  />
-  </View>
-}
-
-function CodeSubmit(props) {
-  return <View>
-    <TextInput
-      style={props.style}
-      value={props.code}
-      placeholder="XXX-XX-XXXX (Alphanumeric)"
-      onChangeText={props.onChangeText}
-    />
-    <GradientButton text="Submit" onPress={props.onPress} />
-  </View>
-}
 
 export default class CodeSubmitForm extends Component {
 
   constructor(props) {
     super(props);
 
-    this.state= {
+    this.state = {
       code: "",
-      submitted: false
+      error: null
     }
   }
 
-  onCodeSubmit = () => {
-    this.setState({ submitted: true })
+
+  formatCode(text) {
+    let firstBlock = text.slice(0,3)
+    let secondBlock = text.slice(3,6)
+    let thirdBlock = text.slice(6,10)
+
+    let result = firstBlock
+
+    if (text.length > 3) {
+      result += "-"
+      result += secondBlock
+    }
+
+    if (text.length > 6) {
+      result += "-"
+      result += thirdBlock
+    }
+
+    return result
   }
 
-  onNewForm = () => {
-    this.setState({ code: "", submitted: false })
+  isCodeFormatValid(code) {
+    if (code.length === 0) return true
+    return !code.match(/[^\w+]/)
+  }
+
+  onCodeSubmit = () => {
+    if (this.state.code.length === 0) {
+      this.setState({ error: "Cannot be blank" })
+      return
+    }
+
+    if (this.state.code.length !== 10) {
+      this.setState({ error: "Must be 10 characters" })
+      return
+    }
+
+    this.setState({ error: null, code: "" })
+    this.props.onCodeSubmitted()
   }
 
   onCodeTextChange = (text) => {
+    text = text.replace(/-/g,"") // remove - character
+    text = text.slice(0,10)      // dont go beyond 10 characters
+
     this.setState({ code: text })
+
+    if (text.length > 0) {
+      this.setState({ error: null })
+    }
   }
 
   render() {
+    let isFormatValid = this.isCodeFormatValid(this.state.code)
+    let codeInputStyle = [styles.codeInput] 
+
+    if (!isFormatValid || this.state.error) {
+      codeInputStyle.push(styles.inputError)
+    }
+
     return (
       <View>
-        <Text style={styles.label}>Your Code:</Text>  
+        <TextInput
+          style={codeInputStyle}
+          value={this.formatCode(this.state.code)}
+          placeholder="XXX-XXX-XXXX (Alphanumeric)"
+          onChangeText={this.onCodeTextChange}
+        />
         {
-          this.state.submitted ? (
-            <InputAnother onPress={this.onNewForm} style={[styles.label, styles.successLabel]} />
-          ) : (
-            <CodeSubmit
-              code={this.state.code}
-              onChangeText={this.onCodeTextChange}
-              onPress={this.onCodeSubmit}
-              style={styles.codeInput}
-            />
-          )
+          !isFormatValid &&
+            <Text style={styles.textError}>
+              Invalid Format. Only Letters or Numbers Allowed
+            </Text>
         }
+        {
+          this.state.error &&
+            <Text style={styles.textError}>
+              {this.state.error}
+            </Text>
+        }
+        <GradientButton text="Submit" onPress={this.onCodeSubmit} style={styles.submitBtn} />
       </View>
-    );
+    )
   }
+
+
 }
