@@ -1,0 +1,3 @@
+rootProject.name = 'EventGo'
+
+include ':app'
