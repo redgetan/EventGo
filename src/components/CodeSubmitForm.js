@@ -4,6 +4,7 @@ import GradientButton from './GradientButton'
 
 const styles = StyleSheet.create({
   codeInput: {
+    color: '#000000',
     height: 40,
     borderColor: '#D5D5D5',
     borderWidth: 1,
